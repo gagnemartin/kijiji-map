@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react'
 import { GoogleApiWrapper, InfoWindow, Map, Marker } from 'google-maps-react'
-import he from 'he'
 import axios from 'axios'
 import Filters from './Filters'
 

@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import PriceRange from './PriceRange'
 
 export default class City extends Component
 {

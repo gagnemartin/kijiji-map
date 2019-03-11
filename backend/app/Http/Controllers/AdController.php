@@ -27,6 +27,35 @@ class AdController extends Controller
         return response()->json($ads, 200);
     }
 
+
+//    public function getNumberOfRooms()
+//    {
+//        $ads = Ad::select('id', 'url')->get();
+//        $deleteIds = [];
+//
+//        //foreach($ads as $ad) {
+//        //$health = Ping::check('https://www.kijiji.ca/v-appartement-condo/ville-de-montreal/appartement-2-1-2-a-sous-louer/1419713011');
+//
+//        //$url = 'https://www.kijiji.ca/v-appartement-condo/ville-de-montreal/appartement-2-1-2-a-sous-louer/1419713011';
+//        $url = 'https://www.kijiji.ca/v-appartement-condo/ville-de-montreal/3-1-2-apt-demi-sous-sol-chauffe-eau-chaude-poele-frigo-propre/1419869546';
+//        $dom = new Dom;
+//        $dom->load($url);
+//        $numRooms = $dom->find('dd.attributeValue-2574930263')[0];
+//
+//        if (!$numRooms) {
+//            $deleteIds[] ='yo';
+//        }
+//
+//        return response()->json($deleteIds);
+//
+////            if($health == 404) {
+////                $deleteIds[] = $ad->id;
+////            }
+//        //}
+//
+//        return response()->json($deleteIds);
+//    }
+
 //    public function getNumberOfRooms()
 //    {
 //        $ads = Ad::select('id', 'url')->get();

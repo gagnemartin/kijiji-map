@@ -14,6 +14,8 @@ class Ad extends Model
         'lng',
         'url',
         'thumbnail',
-        'publish_date'
+        'publish_date',
+        'rooms',
+        //'city'
     ];
 }

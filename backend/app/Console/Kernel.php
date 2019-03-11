@@ -33,6 +33,25 @@ class Kernel extends ConsoleKernel
         //          ->hourly();
 
         $schedule->call(function() {
+            $ads = Ad::select('id', 'url')->get();
+            $deleteIds = [];
+
+            foreach($ads as $ad) {
+                $dom = new Dom;
+                $dom->load($ad->url);
+                $numRooms = $dom->find('dd.attributeValue-2574930263')[0];
+
+                if (!$numRooms) {
+                    $deleteIds[] = $ad->id;
+                }
+            }
+
+            if (count($deleteIds) > 0) {
+                Ad::destroy($deleteIds);
+            }
+        })->twiceDaily();
+
+        $schedule->call(function() {
             $feed = FeedReader::read('https://www.kijiji.ca/rss-srp-appartement-condo/ville-de-montreal/c37l1700281?ad=offering');
             $now = Carbon::now('utc')->toDateTimeString();
 
@@ -49,7 +68,7 @@ class Kernel extends ConsoleKernel
                 $dom->load($item->get_link());
                 $numRooms = $dom->find('dd.attributeValue-2574930263')[0];
 
-                if (isset($numRooms)) {
+                if ($numRooms) {
                     $boom = explode(' ', $numRooms->text());
                     $numRooms = (float) ((int) $boom[0] + 0.5);
                 }
@@ -62,7 +81,7 @@ class Kernel extends ConsoleKernel
                     'thumbnail' => $thumbnail->link,
                     'lat' => (float) $item->get_latitude(),
                     'lng' => (float) $item->get_longitude(),
-                    'city' => 'montreal',
+                    //'city' => 'montreal',
                     'rooms' => $numRooms,
                     'publish_date' => Carbon::parse($date['data']),
                     'created_at'=> $now,
