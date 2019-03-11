@@ -6,6 +6,7 @@ use App\Ad;
 use Awjudd\FeedReader\Facades\FeedReader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use PHPHtmlParser\Dom;
 
 class AdController extends Controller
 {
@@ -17,11 +18,34 @@ class AdController extends Controller
         if (isset($filters['price'])) {
             $query->where('price', '<', $filters['price']);
         }
+        if (isset($filters['rooms'])) {
+            $query->where('rooms', $filters['rooms']);
+        }
 
         $ads = $query->get();
 
         return response()->json($ads, 200);
     }
+
+//    public function getNumberOfRooms()
+//    {
+//        $ads = Ad::select('id', 'url')->get();
+//        $dom = new Dom;
+//        $rooms = [];
+//
+//        foreach ($ads as $ad) {
+//            $dom->load($ad->url);
+//            $numRooms = $dom->find('dd.attributeValue-2574930263')[0];
+//
+//            if (isset($numRooms)) {
+//                $boom = explode(' ', $numRooms->text());
+//                $numRooms = (float) ((int) $boom[0] + 0.5);
+//                $rooms[] = Ad::where('id', $ad->id)->update(['rooms' => $numRooms]);
+//            }
+//        }
+//
+//        return response()->json($rooms, 200);
+//    }
 
 //    public function getFeed()
 //    {

@@ -8,6 +8,7 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Ad;
+use PHPHtmlParser\Dom;
 
 class Kernel extends ConsoleKernel
 {
@@ -44,6 +45,15 @@ class Kernel extends ConsoleKernel
                 $date = $item->get_item_tags('http://purl.org/dc/elements/1.1/', 'date')[0];
                 $thumbnail = $item->get_enclosure();
 
+                $dom = new Dom;
+                $dom->load($item->get_link());
+                $numRooms = $dom->find('dd.attributeValue-2574930263')[0];
+
+                if (isset($numRooms)) {
+                    $boom = explode(' ', $numRooms->text());
+                    $numRooms = (float) ((int) $boom[0] + 0.5);
+                }
+
                 $item = [
                     'name' => htmlspecialchars_decode($item->get_title()),
                     'url' => $item->get_link(),
@@ -52,6 +62,8 @@ class Kernel extends ConsoleKernel
                     'thumbnail' => $thumbnail->link,
                     'lat' => (float) $item->get_latitude(),
                     'lng' => (float) $item->get_longitude(),
+                    'city' => 'montreal',
+                    'rooms' => $numRooms,
                     'publish_date' => Carbon::parse($date['data']),
                     'created_at'=> $now,
                     'modified_at'=> $now

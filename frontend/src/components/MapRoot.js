@@ -28,6 +28,8 @@ export class MapRoot extends PureComponent
 		this.fetchAds = this.fetchAds.bind(this)
 		this.onInfoWindowClose = this.onInfoWindowClose.bind(this)
 		this.onChangePrice = this.onChangePrice.bind(this)
+		this.onChangeCity = this.onChangeCity.bind(this)
+		this.onChangeRooms = this.onChangeRooms.bind(this)
 	}
 
 	componentDidMount()
@@ -123,13 +125,88 @@ export class MapRoot extends PureComponent
 	onChangePrice(price)
 	{
 		if (price <= 0) {
-			this.fetchAds()
+			this.setState(prevState => ({
+				activeMarker: {},
+				isVisibleInfoWindow: false,
+				filters: { ...prevState.filters, price: price }
+			}), this.fetchAds)
 		} else {
-			const url = '/ads/list?price=' + price
+			this.setState(prevState => ({
+				activeMarker: {},
+				isVisibleInfoWindow: false,
+				filters: { ...prevState.filters, price: price }
+			}), () => {
+				this.fetchAds(this.buildFiltersUrl())
+			})
+		}
+	}
 
-			this.fetchAds(url)
+	onChangeCity(city)
+	{
+		if (city !== null) {
+			this.setState(prevState => ({
+				activeMarker: {},
+				isVisibleInfoWindow: false,
+				filters: { ...prevState.filters, city: city }
+			}), this.fetchAds)
+		} else {
+
+			this.setState(prevState => ({
+				activeMarker: {},
+				isVisibleInfoWindow: false,
+				filters: { ...prevState.filters, city: city }
+			}), () => {
+				this.fetchAds(this.buildFiltersUrl())
+			})
+		}
+	}
+
+	onChangeRooms(e)
+	{
+		const rooms = e.target.value
+
+		if (rooms === 'null') {
+			this.setState(prevState => ({
+				activeMarker: {},
+				isVisibleInfoWindow: false,
+				filters: { ...prevState.filters, rooms: rooms }
+			}), this.fetchAds)
+		} else {
+
+			this.setState(prevState => ({
+				activeMarker: {},
+				isVisibleInfoWindow: false,
+				filters: { ...prevState.filters, rooms: rooms }
+			}), () => {
+				this.fetchAds(this.buildFiltersUrl())
+			})
+		}
+	}
+
+
+	buildFiltersUrl()
+	{
+		const path = '/ads/list'
+		let parameters = ''
+
+		Object.keys(this.state.filters).map((filter, i) => {
+			let separator = '&'
+
+			if (i === 0) separator = '?'
+
+			parameters += separator + filter + '=' + this.state.filters[filter]
+		})
+
+		return path + parameters
+	}
+
+	toFraction(decimal)
+	{
+		if (typeof decimal === 'undefined' || decimal === null) {
+			return null
 		}
 
+		return decimal.split('.')[0] + ' 1/2'
 	}
 
 	render()
@@ -137,55 +214,61 @@ export class MapRoot extends PureComponent
 		const activeMarker = this.state.activeMarker
 
 		return (
-			<React.Fragment>
-				<Map
-					google={ this.props.google }
-					zoom={ 14 }
-					center={ this.state.initialCenter }
-					initialCenter={ this.state.initialCenter }
-					onClick={ this.onInfoWindowClose }
-				>
-					{ this.state.ads.map((ad, index) => (
-						<Marker
-							key={ ad.lat + '-' + ad.lng + '-' + index}
-							label={{
-								text: ad.price === null ? 'Sur demande' : parseInt(ad.price) + '$',
-								fontWeight: 'bold',
-							}}
-							name={ he.decode(ad.name) }
-							position={{
-								lat: parseFloat(ad.lat),
-								lng: parseFloat(ad.lng)
-							}}
-							onClick={ this.onMarkerClick.bind(this, ad) }
-						/>
-					))}
-
-					<InfoWindow
-						visible={ this.state.isVisibleInfoWindow }
-						onClose={ this.onInfoWindowClose }
-						position={{
-							lat: parseFloat(activeMarker.lat),
-							lng: parseFloat(activeMarker.lng)
-						}}
-					>
-						<div style={{ maxWidth: '200px'}}>
-							{'thumbnail' in activeMarker && activeMarker.thumbnail !== null &&
-							<a rel="noopener noreferrer" target="_blank" href={ activeMarker.url }>
-								<img style={{ maxWidth: '100%', height: 'auto' }} src={ activeMarker.thumbnail }
-									 alt={ he.decode(activeMarker.name) }/>
-							</a>
-							}
-							<h3>{ he.decode(activeMarker.name) }</h3>
-							<p>Prix: { activeMarker.price === null ? 'Sur demande' : parseInt(activeMarker.price) + '$' }</p>
-							<a rel="noopener noreferrer" target="_blank" href={ activeMarker.url }>Voir l'annonce sur Kijiji</a>
-						</div>
-					</InfoWindow>
-				</Map>
+			<div className="d-flex">
 				<Filters
 					onChangePrice={ this.onChangePrice }
+					onChangeCity={ this.onChangeCity }
+					onChangeRooms={ this.onChangeRooms }
 				/>
-			</React.Fragment>
+
+				<div>
+					<Map
+						google={ this.props.google }
+						zoom={ 13 }
+						center={ this.state.initialCenter }
+						initialCenter={ this.state.initialCenter }
+						onClick={ this.onInfoWindowClose }
+					>
+						{ this.state.ads.map((ad, index) => (
+							<Marker
+								key={ ad.lat + '-' + ad.lng + '-' + index}
+								label={{
+									text: ad.price === null ? 'Sur demande' : parseInt(ad.price) + '$',
+									fontWeight: 'bold',
+								}}
+								name={ ad.name }
+								position={{
+									lat: parseFloat(ad.lat),
+									lng: parseFloat(ad.lng)
+								}}
+								onClick={ this.onMarkerClick.bind(this, ad) }
+							/>
+						))}
+
+						<InfoWindow
+							visible={ this.state.isVisibleInfoWindow }
+							onClose={ this.onInfoWindowClose }
+							position={{
+								lat: parseFloat(activeMarker.lat),
+								lng: parseFloat(activeMarker.lng)
+							}}
+						>
+							<div style={{ maxWidth: '200px'}}>
+								{'thumbnail' in activeMarker && activeMarker.thumbnail !== null &&
+								<a rel="noopener noreferrer" target="_blank" href={ activeMarker.url }>
+									<img style={{ maxWidth: '100%', height: 'auto' }} src={ activeMarker.thumbnail }
+										 alt={ activeMarker.name }/>
+								</a>
+								}
+								<h3>{ activeMarker.name }</h3>
+								<p>Prix: { activeMarker.price === null ? 'Sur demande' : parseInt(activeMarker.price) + '$' }</p>
+								<p>Pièces: { this.toFraction(activeMarker.rooms) }</p>
+								<a rel="noopener noreferrer" target="_blank" href={ activeMarker.url }>Voir l'annonce sur Kijiji</a>
+							</div>
+						</InfoWindow>
+					</Map>
+				</div>
+			</div>
 		)
 	}
 }
